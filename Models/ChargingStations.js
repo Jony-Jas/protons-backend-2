@@ -4,13 +4,20 @@ const StationSchema = new mongoose.Schema({
     lat: Number,
     lng: Number,
     description: String,
+
     chargers: [{
         chargetype: String,
         status: String,
         availability: [{
             bookedtime: String
-        }]
+        }],
+        
     }],
+    amenities:[{
+        name:String,
+        description:String,
+        location:String
+    }]
 
 });
 

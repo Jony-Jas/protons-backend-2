@@ -117,8 +117,11 @@ app.post("/findnearest", fetchStationData, async (req, res) => {
   try {
     // user location is sent in the request body
     const userLocation = req.body;
-    // console.log(userLocation);
+    
     // Transforming globalStationsData into the desired charging station format
+    
+
+    
     const nearestStations = findNearest(globalStationsData, userLocation);
     console.log(nearestStations);
     res.status(200).json({
@@ -129,6 +132,15 @@ app.post("/findnearest", fetchStationData, async (req, res) => {
   }
 });
 
+//router to post stations data--->testing purpose
+app.post('/setstation', async (req, res) => {
+  try {
+    const newStation = await StationModel.create(req.body);
+    res.status(201).json(newStation);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
 app.get("/station", async (req, res) => {
   try {
     const stationData = await StationModel.find();
@@ -151,6 +163,34 @@ app.get("/station/:id", async (req, res) => {
   }
 });
 
+app.post('/addTimeslot/:stationId', async (req, res) => {
+  console.log(req.body);
+
+  const stationId = req.params.stationId;
+  
+  const selectedslot  = req.body;
+  console.log("selecte",selectedslot);
+
+  try {
+    const station = await StationModel.findById(stationId);
+
+    if (!station) {
+      return res.status(404).json({ message: 'Station not found' });
+    }
+
+    // Add the booked timeslot to the availability array
+    station.chargers.forEach((charger) => {
+      charger.availability.push({ bookedtime: selectedslot.bookedtime });
+    });
+
+    await station.save();
+
+    res.status(200).json({ message: 'Timeslot added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 app.post("/getPath", async (req, res) => {
   const { travelRoute, mileage, batteryLevel } = req.body;
 
@@ -185,6 +225,7 @@ app.post("/getPath", async (req, res) => {
     res.status(500).send({ error: "Something went Wrong!" });
   }
 });
-app.listen(3000, () => {
-  console.log("server is running on port", 3000);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("server is running on port", PORT);
 });
